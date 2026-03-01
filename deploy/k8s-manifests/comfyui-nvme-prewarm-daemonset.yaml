@@ -1,0 +1,94 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-gp3-retain
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: comfyui-models-ebs-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-gp3-retain
+  resources:
+    requests:
+      storage: 200Gi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: comfyui-prewarm-sa
+  namespace: default
+  labels:
+    app: comfyui-nvme-prewarm
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::008971666757:role/ComfyUI-S3-CSI-Role
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: comfyui-nvme-prewarm
+  namespace: default
+  labels:
+    app: comfyui-nvme-prewarm
+spec:
+  selector:
+    matchLabels:
+      app: comfyui-nvme-prewarm
+  template:
+    metadata:
+      labels:
+        app: comfyui-nvme-prewarm
+    spec:
+      serviceAccountName: comfyui-prewarm-sa
+      nodeSelector:
+        workload: gpu
+      initContainers:
+      - name: sync-models
+        image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/daemonset-s3-sync:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -e
+
+          # 检查 EBS 是否已有模型
+          if [ -f /models/.sync_complete ]; then
+            echo "Models already synced to EBS, skipping S3 download..."
+            exit 0
+          fi
+
+          echo "First time sync: downloading models from S3 to EBS..."
+          aws s3 sync s3://comfyui-models-bucket-008971666757/models/ /models/ \
+            --size-only \
+            --no-progress
+
+          touch /models/.sync_complete
+          echo "Sync to EBS completed"
+        env:
+        - name: AWS_REGION
+          value: "us-west-2"
+        volumeMounts:
+        - name: models-volume
+          mountPath: /models
+      containers:
+      - name: placeholder
+        image: busybox
+        command: ["sleep", "infinity"]
+        volumeMounts:
+        - name: models-volume
+          mountPath: /models
+      volumes:
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: comfyui-models-ebs-pvc

@@ -1,0 +1,91 @@
+{
+  "11": {
+    "inputs": {
+      "multi_line_prompt": "轻喘像风掠过耳畔，\n你靠近时，连呼吸都慢了半拍。\n\n"
+    },
+    "class_type": "MultiLinePromptIndex",
+    "_meta": {
+      "title": "Multi Line Text"
+    }
+  },
+  "56": {
+    "inputs": {
+      "version": "v1.5",
+      "top_k": 30,
+      "top_p": 0.8,
+      "temperature": 1,
+      "num_beams": 3,
+      "max_mel_tokens": 786,
+      "max_text_tokens_per_sentence": 94,
+      "sentences_bucket_max_size": 4,
+      "fast_inference": true,
+      "custom_cuda_kernel": false,
+      "deepspeed": false,
+      "unload_model": true,
+      "audio": [
+        "60",
+        0
+      ],
+      "text": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "IndexTTSRun",
+    "_meta": {
+      "title": "IndexTTS Run"
+    }
+  },
+  "60": {
+    "inputs": {
+      "minimal_pause_widget_-1": "",
+      "any": [
+        "63",
+        0
+      ]
+    },
+    "class_type": "MinimalPauseNode",
+    "_meta": {
+      "title": "Pause Node @MW"
+    }
+  },
+  "61": {
+    "inputs": {
+      "audioUI": "",
+      "audio": [
+        "63",
+        0
+      ]
+    },
+    "class_type": "PreviewAudio",
+    "_meta": {
+      "title": "预览音频"
+    }
+  },
+  "63": {
+    "inputs": {
+      "audio": "16k16bit.wav",
+      "start_time": 0,
+      "duration": 0
+    },
+    "class_type": "VHS_LoadAudioUpload",
+    "_meta": {
+      "title": "Load Audio (Upload)🎥🅥🅗🅢"
+    }
+  },
+  "65": {
+    "inputs": {
+      "filename_prefix": "IN会话",
+      "quality": "V0",
+      "audioUI": "",
+      "audio": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": {
+      "title": "保存音频 (MP3)"
+    }
+  }
+}

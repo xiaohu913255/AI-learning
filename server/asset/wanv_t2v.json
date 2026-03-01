@@ -1,0 +1,175 @@
+{
+  "11": {
+    "inputs": {
+      "model_name": "umt5-xxl-enc-bf16.safetensors",
+      "precision": "bf16",
+      "load_device": "offload_device",
+      "quantization": "disabled"
+    },
+    "class_type": "LoadWanVideoT5TextEncoder",
+    "_meta": {
+      "title": "Load WanVideo T5 TextEncoder"
+    }
+  },
+  "16": {
+    "inputs": {
+      "positive_prompt": "A playful orange tabby cat chasing a small gray mouse across a clean wooden floor in a cozy living room. The cat runs with agile movements, the mouse scurries quickly between furniture legs. Smooth continuous motion, sharp focus, natural indoor lighting from window, realistic fur texture and whiskers, stable camera following the action. High quality 10 second video with consistent movement and clear details.",
+      "negative_prompt": "静态画面，静止不动，冻结帧，无动作，模糊不清，失焦，细节丢失，景深错误，抖动，闪烁，画面跳跃，不稳定，卡顿，掉帧，撕裂，过曝，欠曝，曝光不均，高光溢出，阴影死黑，色彩失真，色调艳丽，饱和度过高，整体发灰，色偏，白平衡错误，噪点，颗粒感，压缩伪影，JPEG伪影，马赛克，条纹，色块，色带，畸形，残缺，多余的肢体，多余的手指，六根手指，三条腿，四条腿以上，画得不好的手部，画得不好的脸部，手指融合，手指扭曲，身体比例失调，形态畸形，毁容，丑陋，五官错位，眼睛大小不一，不自然的动作，僵硬，机械感，漂移，瞬移，穿模，物体穿透，重影，残影，拖影，杂乱的背景，背景人很多，无关物体，前后景混乱，透视错误，倒着走，倒放，逆向运动，违反物理规律，重力异常，字幕，水印，边框，logo，文字，标识，时间戳，版权信息，低质量，最差质量，劣质，粗糙，业余，画作，插画，手绘风格，卡通，动画，非真实感，风格化，艺术作品，素描，油画风格",
+      "force_offload": true,
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "t5": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "WanVideoTextEncode",
+    "_meta": {
+      "title": "WanVideo TextEncode"
+    }
+  },
+  "22": {
+    "inputs": {
+      "model": "wan2.1_t2v_14B_fp8_e4m3fn.safetensors",
+      "base_precision": "bf16",
+      "quantization": "fp8_e4m3fn",
+      "load_device": "offload_device",
+      "attention_mode": "sdpa",
+      "block_swap_args": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "WanVideoModelLoader",
+    "_meta": {
+      "title": "WanVideo Model Loader"
+    }
+  },
+  "27": {
+    "inputs": {
+      "steps": 20,
+      "cfg": 7,
+      "shift": 5,
+      "seed": 1057359483639287,
+      "force_offload": true,
+      "scheduler": "dpm++",
+      "riflex_freq_index": 0,
+      "denoise_strength": 1,
+      "batched_cfg": false,
+      "rope_function": "comfy",
+      "model": [
+        "22",
+        0
+      ],
+      "text_embeds": [
+        "16",
+        0
+      ],
+      "image_embeds": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "WanVideoSampler",
+    "_meta": {
+      "title": "WanVideo Sampler"
+    }
+  },
+  "28": {
+    "inputs": {
+      "enable_vae_tiling": true,
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
+      "vae": [
+        "38",
+        0
+      ],
+      "samples": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "WanVideoDecode",
+    "_meta": {
+      "title": "WanVideo Decode"
+    }
+  },
+  "30": {
+    "inputs": {
+      "frame_rate": 16,
+      "loop_count": 0,
+      "filename_prefix": "WanVideo2_1_T2V",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 15,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "35": {
+    "inputs": {
+      "backend": "inductor",
+      "fullgraph": false,
+      "mode": "default",
+      "dynamic": false,
+      "dynamo_cache_size_limit": 64,
+      "compile_transformer_blocks_only": true,
+      "dynamo_recompile_limit": 128
+    },
+    "class_type": "WanVideoTorchCompileSettings",
+    "_meta": {
+      "title": "WanVideo Torch Compile Settings"
+    }
+  },
+  "37": {
+    "inputs": {
+      "width": 832,
+      "height": 480,
+      "num_frames": 161
+    },
+    "class_type": "WanVideoEmptyEmbeds",
+    "_meta": {
+      "title": "WanVideo Empty Embeds"
+    }
+  },
+  "38": {
+    "inputs": {
+      "model_name": "Wan2_1_VAE_bf16.safetensors",
+      "precision": "bf16"
+    },
+    "class_type": "WanVideoVAELoader",
+    "_meta": {
+      "title": "WanVideo VAE Loader"
+    }
+  },
+  "39": {
+    "inputs": {
+      "blocks_to_swap": 20,
+      "offload_img_emb": false,
+      "offload_txt_emb": false,
+      "use_non_blocking": true,
+      "vace_blocks_to_swap": 0
+    },
+    "class_type": "WanVideoBlockSwap",
+    "_meta": {
+      "title": "WanVideo BlockSwap"
+    }
+  }
+}
+

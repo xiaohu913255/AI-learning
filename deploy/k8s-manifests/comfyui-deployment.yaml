@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comfyui
+  namespace: default
+  labels:
+    app: comfyui
+    version: v1
+    deployment-type: s3
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: comfyui
+  template:
+    metadata:
+      labels:
+        app: comfyui
+        version: v1
+    spec:
+      nodeSelector:
+        workload: gpu
+      containers:
+      - name: comfyui
+        image: 008971666757.dkr.ecr.us-west-2.amazonaws.com/comfyui-s3@sha256:55063cdd7616bbcd2f6d67593acd9665c119e49bd4a69e7d23c5093725ceaf7a
+        imagePullPolicy: Always
+        command:
+        - bash
+        - -lc
+        - |
+          mkdir -p /tmp/comfyui-logs
+          echo "🚀 Starting ComfyUI at $(date)" | tee /tmp/comfyui-logs/comfyui_runtime.log
+
+          # 执行依赖安装脚本
+          if [ -f /opt/program/custom_nodes/install_deps.sh ]; then
+            echo "📦 Installing dependencies..." | tee -a /tmp/comfyui-logs/comfyui_runtime.log
+            chmod +x /opt/program/custom_nodes/install_deps.sh
+            bash /opt/program/custom_nodes/install_deps.sh 2>&1 | tee -a /tmp/comfyui-logs/comfyui_runtime.log
+          fi
+
+          python -u main.py --listen 0.0.0.0 --port 8188 2>&1 | tee -a /tmp/comfyui-logs/comfyui_runtime.log
+        ports:
+        - containerPort: 8188
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "56Gi"
+            cpu: "12"
+            ephemeral-storage: "60Gi"
+          requests:
+            nvidia.com/gpu: 1
+            memory: "32Gi"
+            cpu: "7"
+            ephemeral-storage: "30Gi"
+        volumeMounts:
+        - name: models
+          mountPath: /opt/program/models
+        - name: custom-nodes
+          mountPath: /opt/program/custom_nodes
+        env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: comfyui-models-ebs-pvc
+      - name: custom-nodes
+        persistentVolumeClaim:
+          claimName: comfyui-custom-nodes-pvc
