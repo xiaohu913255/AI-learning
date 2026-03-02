@@ -10,18 +10,22 @@ type ConfigsStore = {
   imageModels: Model[]
   videoModels: Model[]
   comfyuiModels: Model[]
+  audioModels: Model[]
   setTextModels: (models: Model[]) => void
   setImageModels: (models: Model[]) => void
   setVideoModels: (models: Model[]) => void
+  setAudioModels: (models: Model[]) => void
   setComfyuiModels: (models: Model[]) => void
 
   textModel?: Model
   imageModel?: Model
   videoModel?: Model
+  audioModel?: Model
   comfyuiModel?: Model
   setTextModel: (model?: Model) => void
   setImageModel: (model?: Model) => void
   setVideoModel: (model?: Model) => void
+  setAudioModel: (model?: Model) => void
   setComfyuiModel: (model?: Model) => void
 
   // 自动判断模型配置
@@ -54,18 +58,22 @@ const useConfigsStore = create<ConfigsStore>((set) => ({
   imageModels: [],
   videoModels: [],
   comfyuiModels: [],
+  audioModels: [],
   setTextModels: (models) => set({ textModels: models }),
   setImageModels: (models) => set({ imageModels: models }),
   setVideoModels: (models) => set({ videoModels: models }),
+  setAudioModels: (models) => set({ audioModels: models }),
   setComfyuiModels: (models) => set({ comfyuiModels: models }),
 
   textModel: undefined,
   imageModel: undefined,
   videoModel: undefined,
+  audioModel: undefined,
   comfyuiModel: undefined,
   setTextModel: (model) => set({ textModel: model }),
   setImageModel: (model) => set({ imageModel: model }),
   setVideoModel: (model) => set({ videoModel: model }),
+  setAudioModel: (model) => set({ audioModel: model }),
   setComfyuiModel: (model) => set({ comfyuiModel: model }),
 
   // 自动判断模型配置，默认开启

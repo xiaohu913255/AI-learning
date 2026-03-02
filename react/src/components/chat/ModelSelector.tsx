@@ -15,14 +15,17 @@ const ModelSelector: React.FC = () => {
     textModel,
     imageModel,
     videoModel,
+    audioModel,
     comfyuiModel,
     setTextModel,
     setImageModel,
     setVideoModel,
+    setAudioModel,
     setComfyuiModel,
     textModels,
     imageModels,
     videoModels,
+    audioModels,
     comfyuiModels,
     autoModelSelection,
     setAutoModelSelection,
@@ -43,6 +46,7 @@ const ModelSelector: React.FC = () => {
   const groupedTextModels = groupModelsByProvider(textModels)
   const groupedImageModels = groupModelsByProvider(imageModels)
   const groupedVideoModels = groupModelsByProvider(videoModels)
+  const groupedAudioModels = groupModelsByProvider(audioModels)
 
   // Sort providers to put Jaaz first
   const sortProviders = (providers: [string, typeof textModels][]) => {
@@ -132,18 +136,30 @@ const ModelSelector: React.FC = () => {
             setImageModel(selectedModel)
             // 清除视频模型
             localStorage.removeItem('video_model')
+	    localStorage.removeItem('audio_model')
             setVideoModel(undefined)
+	    setAudioModel(undefined)
           } else if (selectedModel?.media_type === 'video') {
             localStorage.setItem('video_model', value)
             setVideoModel(selectedModel)
             // 清除图像模型
             localStorage.removeItem('image_model')
+	    localStorage.removeItem('audio_model')
             setImageModel(undefined)
+	    setAudioModel(undefined)
           }
+	  else if (selectedModel?.media_type === 'audio') {
+     	    localStorage.setItem('audio_model', value)
+      	    setAudioModel(selectedModel)
+      	    localStorage.removeItem('image_model')
+      	    localStorage.removeItem('video_model')
+      	    setImageModel(undefined)
+      	    setVideoModel(undefined)
+    	  }
         }}
       >
         <SelectTrigger className="w-fit max-w-[40%] bg-background">
-          <span>🎨🎬</span>
+          <span>🎨🎬🎵</span>
           <SelectValue placeholder="ComfyUI Model" />
         </SelectTrigger>
         <SelectContent>
@@ -162,6 +178,17 @@ const ModelSelector: React.FC = () => {
   <SelectGroup>
     <SelectLabel>🎬 生视频</SelectLabel>
     {comfyuiModels?.filter(m => m.media_type === 'video').map((model) => (
+      <SelectItem
+        key={model.provider + ':' + model.model}
+        value={model.provider + ':' + model.model}
+      >
+        {MODEL_NAME_MAPPING[model.model] || model.model}
+      </SelectItem>
+    ))}
+  </SelectGroup>
+    <SelectGroup>
+    <SelectLabel>🎵 生音频</SelectLabel>
+    {comfyuiModels?.filter(m => m.media_type === 'audio').map((model) => (
       <SelectItem
         key={model.provider + ':' + model.model}
         value={model.provider + ':' + model.model}

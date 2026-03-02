@@ -65,7 +65,9 @@ data:
         "qwen-image-multiple" = { type = "comfyui", media_type = "image" },
         "flux-t2i" = { type = "comfyui", media_type = "image" },
         "wan-t2v" = { type = "comfyui", media_type = "video" },
-        "wan-i2v" = { type = "comfyui", media_type = "video" }
+        "wan-i2v" = { type = "comfyui", media_type = "video" },
+        "t2a-model" = { type = "comfyui", media_type = "audio" },
+
     }
     # Internal Kubernetes service endpoint - DO NOT change unless you know what you're doing
     url = "http://comfyui-service.default.svc.cluster.local:8188"

@@ -43,7 +43,7 @@ const ChatTextarea: React.FC<ChatTextareaProps> = ({
   onCancelChat,
 }) => {
   const { t } = useTranslation()
-  const { textModel, imageModel, videoModel, imageModels, setShowInstallDialog, autoModelSelection } =
+  const { textModel, imageModel, videoModel, audioModel, imageModels, setShowInstallDialog, autoModelSelection } =
     useConfigs()
   const [prompt, setPrompt] = useState('')
   const textareaRef = useRef<TextAreaRef>(null)
@@ -260,9 +260,9 @@ const ChatTextarea: React.FC<ChatTextareaProps> = ({
   useEffect(() => {
     if (imageModel?.model) {
       const modelName = imageModel.model.toLowerCase()
-      if (modelName.includes('edit')) setSelectedModelType('image-edit')
+      if (modelName.includes('kontext')) setSelectedModelType('image-edit')
       else if (modelName.includes('multi')) setSelectedModelType('multi-image')
-      else if (modelName.includes('upscale')) setSelectedModelType('image-upscale')
+      else if (modelName.includes('image-upscale')) setSelectedModelType('image-upscale')
       else setSelectedModelType('text-to-image')
     }
     if (videoModel?.model) {
@@ -271,6 +271,10 @@ const ChatTextarea: React.FC<ChatTextareaProps> = ({
       else if (modelName.includes('t2v')) setSelectedModelType('text-to-video')
       else if (modelName.includes('db-model')) setSelectedModelType('add-audio')
       else if (modelName.includes('s2v')) setSelectedModelType('image-audio')
+    }
+    if (audioModel?.model) {  // 新增
+      const modelName = audioModel.model.toLowerCase()
+      if (modelName.includes('t2a')) setSelectedModelType('text-to-audio')
     }
   }, [imageModel, videoModel])
 

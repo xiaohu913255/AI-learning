@@ -27,7 +27,7 @@ spec:
         workload: gpu
       containers:
       - name: comfyui
-        image: 008971666757.dkr.ecr.us-west-2.amazonaws.com/comfyui-s3@sha256:55063cdd7616bbcd2f6d67593acd9665c119e49bd4a69e7d23c5093725ceaf7a
+        image: 008971666757.dkr.ecr.us-west-2.amazonaws.com/comfyui-s3:latest
         imagePullPolicy: Always
         command:
         - bash

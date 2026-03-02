@@ -15,7 +15,7 @@ export const ConfigsProvider = ({
   children: React.ReactNode
 }) => {
   const configsStore = useConfigsStore()
-  const { setTextModels, setImageModels, setVideoModels, setComfyuiModels, setTextModel, setImageModel, setVideoModel, setComfyuiModel, setAutoModelSelection } =
+  const { setTextModels, setImageModels, setVideoModels, setAudioModels, setComfyuiModels, setTextModel, setImageModel, setVideoModel, setAudioModel, setComfyuiModel, setAutoModelSelection } =
     configsStore
 
   const { data, refetch: refreshModels } = useQuery({
@@ -72,14 +72,29 @@ export const ConfigsProvider = ({
         setVideoModel(modelList.find((m) => m.type == 'video'))
       }
 
+      const audioModel = localStorage.getItem('audio_model')
+      if (
+        audioModel &&
+        modelList.find((m) => m.provider + ':' + m.model == audioModel)
+      ) {
+        setAudioModel(
+          modelList.find((m) => m.provider + ':' + m.model == audioModel)
+        )
+      } else {
+        setAudioModel(modelList.find((m) => m.type == 'audio'))
+      }
+
+
       const textModels = modelList?.filter((m) => m.type == 'text')
       const imageModels = modelList?.filter((m) => m.type == 'image')
       const videoModels = modelList?.filter((m) => m.type == 'video')
+      const audioModels = modelList?.filter((m) => m.type == 'audio')
       const comfyuiModels = modelList?.filter((m) => m.type == 'comfyui')
 
       setTextModels(textModels || [])
       setImageModels(imageModels || [])
       setVideoModels(videoModels || [])
+      setAudioModels(audioModels || [])
       setComfyuiModels(comfyuiModels || [])
 
       // 设置默认的 ComfyUI 模型
@@ -108,7 +123,7 @@ export const ConfigsProvider = ({
         setAutoModelSelection(true) // 默认开启
       }
     }
-  }, [data, setImageModel, setTextModel, setVideoModel, setComfyuiModel, setTextModels, setImageModels, setVideoModels, setComfyuiModels, setAutoModelSelection])
+  }, [data, setImageModel, setTextModel, setVideoModel, setAudioModel, setComfyuiModel, setTextModels, setImageModels, setVideoModels, setAudioModels, setComfyuiModels, setAutoModelSelection])
 
   return (
     <ConfigsContext.Provider

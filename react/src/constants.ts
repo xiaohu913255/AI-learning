@@ -200,11 +200,11 @@ export const LOGO_URL =
 export const MODEL_NAME_MAPPING: { [key: string]: string } = {
   'wan-i2v': '图生视频',
   'wan-t2v': '文生视频',
-  'flux-kontext': '图像编辑',
-  'qwen-image-multiple': '多图生成',
+  'flux-kontext': '多图水印',
+  'qwen-image-multiple': '一键换装',
   'flux-t2i': '文生图',
   'db-model': '添加音频',
-  'image-upscale': '图片高清放大',
+  'image-upscale': '图片修复',
   'wan-s2v': '图片讲话',
   't2a-model': '文生音频'
 }

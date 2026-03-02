@@ -4,9 +4,7 @@
 # Use this for: Production deployments with S3 CSI driver
 
 #FROM nvcr.io/nvidia/pytorch:25.03-py3
-#FROM nvcr.io/nvidia/pytorch:24.12-py3
-FROM nvcr.io/nvidia/pytorch:23.10-py3
-
+FROM nvcr.io/nvidia/pytorch:24.12-py3
 
 # Create directory structure
 RUN mkdir -p /opt/program
@@ -40,7 +38,6 @@ WORKDIR /opt/program
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /tmp/comfyui && \
     cp -r /tmp/comfyui/* /opt/program/ && \
     rm -rf /tmp/comfyui
-RUN pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
 
 RUN pip install -r /opt/program/requirements.txt
 
@@ -54,20 +51,6 @@ RUN pip install retry
 # INSTALL CUSTOM NODES SECTION
 # Models will be mounted from S3 at runtime
 ###############################################################################
-RUN apt-get update && apt-get install -y \
-    libavformat-dev \
-    libavcodec-dev \
-    libavdevice-dev \
-    libavutil-dev \
-    libavfilter-dev \
-    libswscale-dev \
-    libswresample-dev \
-    pkg-config
-
-RUN git clone https://github.com/if-ai/ComfyUI_HunyuanVideoFoley.git /opt/program/custom_nodes/hunyuanvideo-foley && \
-    cd /opt/program/custom_nodes/hunyuanvideo-foley && \
-    pip install transformers==4.37.0 && \
-    pip install -r requirements.txt
 
 ### Core Custom Nodes ###
 RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git /opt/program/custom_nodes/comfyui_controlnet_aux
@@ -178,28 +161,21 @@ RUN git clone -b v2.0.1 https://github.com/Dao-AILab/flash-attention.git /tmp/fl
     MAX_JOBS=4 python setup.py install --verbose && \
     cd / && rm -rf /tmp/flash-attention
 
-
-# legacy flash attn lib
-#RUN pip install ninja
-#RUN pip uninstall -y flash_attn
-#RUN pip install flash-attn==2.0.1 --no-build-isolation || echo "flash-attn install failed, continuing..."
-
 #### Install SageAttention (optional performance optimization)
 # Use non-editable install to avoid pip 25.0 deprecation warning
-#RUN export TORCH_CUDA_ARCH_LIST="8.9" && export FORCE_CUDA=1 && git clone https://github.com/thu-ml/SageAttention.git /tmp/SageAttention && \
-#    cd /tmp/SageAttention && \
-#    git checkout 2aecfa89c777ec46c4eaaab66082f188a1e00ae4 && \
-#    pip install --no-build-isolation . && \
-#    cd / && rm -rf /tmp/SageAttention
+RUN export TORCH_CUDA_ARCH_LIST="8.9" && export FORCE_CUDA=1 && git clone https://github.com/thu-ml/SageAttention.git /tmp/SageAttention && \
+    cd /tmp/SageAttention && \
+    git checkout 2aecfa89c777ec46c4eaaab66082f188a1e00ae4 && \
+    pip install --no-build-isolation . && \
+    cd / && rm -rf /tmp/SageAttention
 
 # Install OpenCV compatible with NumPy 2.x LAST to avoid being overwritten
 # (4.10.0+ supports NumPy 2.x)
 # Uninstall any existing opencv packages first to avoid conflicts
 RUN pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python
-RUN rm -rf /usr/local/lib/python3.10/dist-packages/cv2*
-RUN rm -rf /usr/local/lib/python3.10/dist-packages/opencv*
-RUN pip install --no-cache-dir opencv-python
-#RUN pip install --no-cache-dir opencv-python==4.12.0.88
+RUN rm -rf /usr/local/lib/python3.12/dist-packages/cv2*
+RUN rm -rf /usr/local/lib/python3.12/dist-packages/opencv*
+RUN pip install --no-cache-dir opencv-python==4.12.0.88
 #RUN pip install numpy==1.26.4
 
 

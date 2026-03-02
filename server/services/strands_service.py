@@ -272,7 +272,7 @@ def get_specialized_agents():
         return []
 
 
-async def strands_agent(messages, canvas_id, session_id, text_model, image_model, video_model=None, system_prompt: str = None, auto_model_selection: bool = True):
+async def strands_agent(messages, canvas_id, session_id, text_model, image_model, video_model=None , audio_model=None, system_prompt: str = None, auto_model_selection: bool = True):
     """单个 Strands Agent 处理"""
     try:
         model = create_model_instance(text_model)
