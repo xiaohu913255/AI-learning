@@ -30,7 +30,9 @@ def create_generate_audio_with_context(
         audio_model: 音频模型配置 {"provider": "comfyui", "model": "t2a-model"}
         user_id: 用户ID
     """
+    from strands import tool
 
+    @tool
     async def generate_audio_with_context(
         prompt: Annotated[str, Field(description="Text to convert to speech/audio")]
     ):

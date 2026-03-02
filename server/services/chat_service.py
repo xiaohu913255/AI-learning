@@ -52,10 +52,11 @@ async def handle_chat(data):
 
     # Get video model from data (optional)
     video_model = data.get('video_model')
+    audio_model = data.get('audio_model')
 
     # Create and start strands agent task for chat processing
     task = asyncio.create_task(strands_agent(
-        messages, canvas_id, session_id, text_model, image_model, video_model, system_prompt, auto_model_selection))
+        messages, canvas_id, session_id, text_model, image_model, video_model, audio_model , system_prompt, auto_model_selection))
 
     # Register the task in stream_tasks (for possible cancellation)
     add_stream_task(session_id, task)
