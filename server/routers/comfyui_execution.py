@@ -308,6 +308,11 @@ class WorkflowExecution:
             if key.startswith("video") or key in ["mp4", "webm", "mov"]:
                 for video_file in output[key]:
                     self.outputs.append(self.format_video_path(video_file))
+        # Handle audio outputs
+        if "audio" in output:
+            for audio in output["audio"]:
+                if audio.get("type") == "output":
+                    self.outputs.append(self.format_video_path(audio))
 
         await send_to_websocket(self.ctx.get('session_id'), {
             'type': 'tool_call_progress',

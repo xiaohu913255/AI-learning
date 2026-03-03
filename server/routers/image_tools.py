@@ -98,7 +98,7 @@ async def get_file(file_id: str):
 
     # 如果没有扩展名，尝试常见的图像扩展名
     if '.' not in file_id:
-        for ext in ['png', 'jpg', 'jpeg', 'gif', 'webp']:
+        for ext in ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'mp3', 'wav', 'm4a']:
             file_path_with_ext = os.path.join(FILES_DIR, f'{file_id}.{ext}')
             print(f'🦄get_file trying with extension (fallback): {file_path_with_ext}')
             if os.path.exists(file_path_with_ext):
@@ -154,7 +154,7 @@ async def upload_video(file: UploadFile = File(...)):
 
         # 创建数据库记录
         try:
-            db_service.create_file(full_file_id, full_file_id, 0, 0)
+            db_service.create_file(full_file_id, full_file_id)
         except Exception as e:
             print(f"❌ Error creating file record: {e}")
 
@@ -173,16 +173,37 @@ async def upload_video(file: UploadFile = File(...)):
 @router.post("/upload_audio")
 async def upload_audio(file: UploadFile = File(...)):
     """上传音频文件"""
-    # 生成唯一文件ID
-    audio_id = generate_file_id()
+    try:  
+        print('🎵 upload_audio file', file.filename) 
+        # 生成唯一文件ID
+        audio_id = generate_file_id()
+        filename = file.filename or '' 
 
-    # 保存文件
-    file_path = os.path.join(FILES_DIR, f"{audio_id}.{file.filename.split('.')[-1]}")
-    with open(file_path, "wb") as f:
+        # 确定文件扩展名 
+        mime_type, _ = guess_type(filename)
+        #extension = mime_type.split('/')[-1] if mime_type else 'mp3'
+        extension = filename.split('.')[-1] if '.' in filename else 'mp3'
+        # 保存文件
+        full_file_id = f"{audio_id}.{extension}"  
+        file_path = os.path.join(FILES_DIR, full_file_id)
+
         content = await file.read()
-        f.write(content)
+        async with aiofiles.open(file_path, "wb") as f:  
+            await f.write(content)
 
-    return {
-        "file_id": audio_id,
-        "url": f"/api/file/{audio_id}"
-    }
+        try:
+            db_service.create_file(full_file_id, full_file_id, None, None)
+        except Exception as e:
+            print(f"❌ Error creating file record: {e}")
+      
+        print('🎵 upload_audio file_path', file_path) 
+        return {
+            "file_id": full_file_id,
+            "url": f"/api/file/{full_file_id}"
+        }
+    except Exception as e:  
+        print(f"❌ Error uploading audio: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload audio: {str(e)}"
+        )

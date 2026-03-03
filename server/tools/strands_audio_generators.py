@@ -77,10 +77,6 @@ def create_generate_audio_with_context(
             db_service.create_file(
                 file_id=audio_id,
                 file_path=file_path,
-                file_type='audio/mpeg',
-                session_id=session_id,
-                canvas_id=canvas_id,
-                user_id=user_id
             )
 
             # 发送 WebSocket 通知
@@ -96,7 +92,7 @@ def create_generate_audio_with_context(
                 'role': 'assistant',
                 'content': [
                     {
-                        'type': 'audio',
+                        'type': 'audio_type',
                         'audio_url': {
                             'url': f'/api/file/{filename}'
                         }

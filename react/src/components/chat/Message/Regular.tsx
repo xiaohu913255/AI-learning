@@ -13,9 +13,13 @@ const MessageRegular: React.FC<MessageRegularProps> = ({
 }) => {
   const isStrContent = typeof content === 'string'
   const isText = isStrContent || (!isStrContent && content.type == 'text')
+  const isImage = !isStrContent && content.type === 'image_url'
+  const isAudio = !isStrContent && content.type === 'audio_url'
 
   const markdownText = isStrContent ? content : (content.type === 'text' ? content.text : '')
-  if (!isText) return <MessageImage content={content} />
+
+  if (isImage) return <MessageImage content={content} />
+  if (isAudio) return <audio controls src={content.audio_url.url} className="my-2" />
 
   return (
     <div

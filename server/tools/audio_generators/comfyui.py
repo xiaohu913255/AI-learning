@@ -71,9 +71,8 @@ class ComfyUIAudioGenerator(AudioGenerator):
 
         # 修改工作流中的文本节点（根据你的实际工作流调整节点 ID）
         # 假设节点 1 是文本输入节点
-        if '1' in workflow:
-            workflow['1']['inputs']['text'] = user_prompt
-
+        if '11' in workflow:
+            workflow['11']['inputs']['multi_line_prompt'] = user_prompt
         print(f"🔧 Workflow params (t2a): text_preview={user_prompt[:80]!r}")
 
         execution = await execute(workflow, host, port, ctx=ctx)
