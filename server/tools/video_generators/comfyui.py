@@ -101,6 +101,7 @@ class ComfyUIVideoGenerator(VideoGenerator):
             if not self.wan_t2v_workflow:
                 raise Exception('WAN T2V workflow json not found')
             return await self._run_wan_t2v_workflow(prompt, host, port, ctx)
+
     async def _run_add_audio_workflow(
         self,
         user_prompt: str,
@@ -119,8 +120,41 @@ class ComfyUIVideoGenerator(VideoGenerator):
         # 配置文本提示词（节点11）
         workflow['11']['inputs']['multi_line_prompt'] = user_prompt
 
+        video_filename = input_video
+        if '.' not in input_video:
+            from services.db_service import db_service
+            try:
+                file_record = db_service.get_file(input_video)
+                if file_record and 'file_path' in file_record:
+                    video_filename = file_record['file_path']
+            except:
+                pass
+
+            if '.' not in video_filename:
+                for ext in ['mp4', 'MP4', 'avi', 'mov']:
+                    test_path = os.path.join(FILES_DIR, f'{input_video}.{ext}')
+                    if os.path.exists(test_path):
+                        video_filename = f'{input_video}.{ext}'
+                        break
+
+        video_file_path = os.path.join(FILES_DIR, video_filename)
+        if not os.path.exists(video_file_path):
+            raise Exception(f"Video file not found: {video_file_path}")
+
+        print(f"📤 Uploading video to ComfyUI: {video_file_path}")
+
+        # 上传视频到 ComfyUI
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            with open(video_file_path, 'rb') as f:
+                files = {'image': (video_filename, f, 'video/mp4')}
+                response = await client.post(f'http://{host}:{port}/upload/image', files=files)
+                if response.status_code == 200:
+                    video_filename = response.json().get('name', video_filename)
+                    print(f"✅ Video uploaded: {video_filename}")
+
         # 配置视频文件（节点67）
-        workflow['67']['inputs']['video'] = input_video
+        workflow['67']['inputs']['video'] = video_filename
+        # ========== 新添加结束 ==========
 
         # 配置音频文件（节点63）- 需要上传到 ComfyUI
         audio_filename = input_audio
@@ -144,6 +178,8 @@ class ComfyUIVideoGenerator(VideoGenerator):
         if not os.path.exists(audio_file_path):
             raise Exception(f"Audio file not found: {audio_file_path}")
 
+        print(f"📤 Uploading audio to ComfyUI: {audio_file_path}")
+
         # 上传音频到 ComfyUI
         async with httpx.AsyncClient(timeout=60.0) as client:
             with open(audio_file_path, 'rb') as f:
@@ -151,6 +187,7 @@ class ComfyUIVideoGenerator(VideoGenerator):
                 response = await client.post(f'http://{host}:{port}/upload/image', files=files)
                 if response.status_code == 200:
                     audio_filename = response.json().get('name', audio_filename)
+                    print(f"✅ Audio uploaded: {audio_filename}")
 
         workflow['63']['inputs']['audio'] = audio_filename
 
@@ -169,7 +206,6 @@ class ComfyUIVideoGenerator(VideoGenerator):
         )
         filename = f'{video_id}.{extension}'
         return video_id, width, height, int(duration), filename
-
 
     async def _run_wan_s2v_workflow(
         self,

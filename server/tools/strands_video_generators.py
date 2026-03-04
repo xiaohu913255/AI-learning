@@ -212,6 +212,30 @@ def create_generate_video_with_context(session_id: str, canvas_id: str, video_mo
                 except Exception as e:
                     print(f"⚠️ Warning: Error processing input image: {e}")
                     processed_input_image = None
+                        # Handle input_audio parameter
+            if not isinstance(input_audio, str):
+                input_audio = ""
+
+            # Check if model supports audio input
+            model_supports_audio = 's2v' in model.lower() or 'db-model' in model.lower()
+
+            # Handle use_previous_audio logic
+            if use_previous_audio and not input_audio and model_supports_audio:
+                print("🔍 DEBUG: use_previous_audio=True, looking for previous audio...")
+                try:
+                    # Get most recent audio from session
+                    audio_files = db_service.get_files_by_session(session_id)
+                    for file in reversed(audio_files):
+                        if file.get('file_path', '').endswith(('.mp3', '.wav', '.MP3', '.WAV', '.m4a', '.ogg')):
+                            input_audio = file.get('file_id', '')
+                            print(f"🔍 DEBUG: Found previous audio: {input_audio}")
+                            break
+                    if not input_audio:
+                        print("🔍 DEBUG: No previous audio found")
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not retrieve previous audio: {e}")
+
+
             # Determine if this should be T2V or I2V based on input
             if processed_input_image:
                 print("🔍 DEBUG: Using Image-to-Video (I2V) mode")

@@ -393,9 +393,10 @@ When user requests to upscale, enhance, or improve image quality (keywords: 放�
 4. The prompt can be simple like "Upscale image" or describe desired quality
 Example: generate_image_with_context(prompt="Upscale to high resolution", use_previous_image=True, model_override="image-upscale")
 
-VIDEO DUBBING (配音):
-When user says "配音" or "添加音频":
-- Call: generate_video_with_context(prompt="青年音", use_previous_video=True, model_override="db-model")
+VIDEO DUBBING (配音/视频添加音频):
+When user wants to add audio to video (keywords: 配音, 添加音频, 配上音频, 合并音频, add audio, dub):
+- Call: generate_video_with_context(prompt="Add audio to video", use_previous_video=True, use_previous_audio=True, model_override="db-model")
+- This will automatically use the most recent video and audio from the conversation
 
 For other tasks, use your general knowledge and reasoning capabilities.
 Be helpful, accurate, and creative in your responses.
