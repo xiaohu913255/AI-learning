@@ -39,6 +39,29 @@ PROVIDERS = {
 # 全局变量来跟踪已发送的事件，防止重复
 _sent_file_events = set()
 
+def get_most_recent_audio_from_session(session_id: str, user_id: str = None) -> str:
+    """从session中获取最近的音频ID"""
+    import re
+    try:
+        if user_id:
+            from services.user_context import UserContextManager
+            with UserContextManager(user_id):
+                messages = db_service.get_chat_history(session_id)
+        else:
+            messages = db_service.get_chat_history(session_id)
+
+        for message in reversed(messages):
+            if not isinstance(message, dict):
+                continue
+            content = message.get('content', '')
+            if isinstance(content, str):
+                match = re.search(r'\[Attached audio filename: ([^\]]+)\]', content)
+                if match:
+                    return match.group(1)
+        return ""
+    except Exception as e:
+        print(f"⚠️ Error getting recent audio: {e}")
+        return ""
 
 def create_generate_video_with_context(session_id: str, canvas_id: str, video_model: dict, user_id: str = None):
     """创建一个带有上下文信息的 generate_video 工具"""
@@ -141,6 +164,18 @@ def create_generate_video_with_context(session_id: str, canvas_id: str, video_mo
                 # User wants to use previous image but the model doesn't support it
                 print(f"⚠️ Model {model} doesn't support input images, ignoring use_previous_image=True")
                 # Continue with text-to-video generation without previous image
+
+            # Handle use_previous_audio logic
+            if use_previous_audio and not input_audio and 's2v' in model.lower():
+                print("🔍 DEBUG: use_previous_audio=True, looking for previous audio...")
+                try:
+                    previous_audio_id = get_most_recent_audio_from_session(session_id, user_id)
+                    if previous_audio_id:
+                        print(f"🔍 DEBUG: Found previous audio: {previous_audio_id}")
+                        input_audio = previous_audio_id
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not retrieve previous audio: {e}")
+
 
             # Process input image if provided
             if input_image:

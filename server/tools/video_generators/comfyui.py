@@ -94,55 +94,76 @@ class ComfyUIVideoGenerator(VideoGenerator):
         elif 'db-model' in model.lower():
             if not self.add_audio_workflow:
                 raise Exception('Your new workflow json not found')
-            return await self._run_add_audio_workflow(prompt, input_video or '', '', host, port, ctx)
+            return await self._run_add_audio_workflow(prompt, input_video or '', input_audio or '', host, port, ctx)
         
         else:
             # Text-to-video workflow
             if not self.wan_t2v_workflow:
                 raise Exception('WAN T2V workflow json not found')
             return await self._run_wan_t2v_workflow(prompt, host, port, ctx)
-    
-    async def _run_wan_s2v_workflow(
+    async def _run_add_audio_workflow(
         self,
         user_prompt: str,
-        input_image: str,
+        input_video: str,
         input_audio: str,
         host: str,
         port: str,
         ctx: dict
     ) -> tuple[str, int, int, int, str]:
-        """
-        图片说话：根据音频和参考图生成口型同步的视频
-        """
-        workflow = copy.deepcopy(self.wan_s2v_workflow)
+        """给视频添加音频"""
+        import os
+        import httpx
 
-        # 配置正向提示词（节点6）
-        workflow['6']['inputs']['text'] = user_prompt
+        workflow = copy.deepcopy(self.add_audio_workflow)
 
-        # 配置参考图片（节点52）
-        workflow['52']['inputs']['image'] = input_image
+        # 配置文本提示词（节点11）
+        workflow['11']['inputs']['multi_line_prompt'] = user_prompt
 
-        # 配置输入音频（节点58）
-        workflow['58']['inputs']['audio'] = input_audio
+        # 配置视频文件（节点67）
+        workflow['67']['inputs']['video'] = input_video
 
-        # 配置随机种子
-        import random
-        workflow['3']['inputs']['seed'] = random.randint(0, 99999999998)
-        workflow['79:77']['inputs']['seed'] = random.randint(0, 99999999998)
-        workflow['85:77']['inputs']['seed'] = random.randint(0, 99999999998)
+        # 配置音频文件（节点63）- 需要上传到 ComfyUI
+        audio_filename = input_audio
+        if '.' not in input_audio:
+            from services.db_service import db_service
+            try:
+                file_record = db_service.get_file(input_audio)
+                if file_record and 'file_path' in file_record:
+                    audio_filename = file_record['file_path']
+            except:
+                pass
 
-        # 配置输出文件名（节点113）
+            if '.' not in audio_filename:
+                for ext in ['mp3', 'wav', 'MP3', 'WAV']:
+                    test_path = os.path.join(FILES_DIR, f'{input_audio}.{ext}')
+                    if os.path.exists(test_path):
+                        audio_filename = f'{input_audio}.{ext}'
+                        break
+
+        audio_file_path = os.path.join(FILES_DIR, audio_filename)
+        if not os.path.exists(audio_file_path):
+            raise Exception(f"Audio file not found: {audio_file_path}")
+
+        # 上传音频到 ComfyUI
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            with open(audio_file_path, 'rb') as f:
+                files = {'image': (audio_filename, f, 'audio/mpeg')}
+                response = await client.post(f'http://{host}:{port}/upload/image', files=files)
+                if response.status_code == 200:
+                    audio_filename = response.json().get('name', audio_filename)
+
+        workflow['63']['inputs']['audio'] = audio_filename
+
+        # 配置输出文件名（节点66）
         video_id = generate_video_id()
-        workflow['113']['inputs']['filename_prefix'] = f'video/{video_id}'
+        workflow['66']['inputs']['filename_prefix'] = f'video/{video_id}'
 
         execution = await execute(workflow, host, port, ctx=ctx)
 
         if not execution.outputs:
-            raise Exception('No outputs from S2V workflow')
+            raise Exception('No outputs from add audio workflow')
 
         url = execution.outputs[0]
-
-        # 保存视频
         mime_type, width, height, duration, extension = await get_video_info_and_save(
             url, os.path.join(FILES_DIR, f'{video_id}')
         )
