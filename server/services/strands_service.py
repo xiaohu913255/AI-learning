@@ -279,7 +279,7 @@ async def strands_agent(messages, canvas_id, session_id, text_model, image_model
 
         # 创建系统提示
         # Detect availability of use_agent tool early to shape prompt and tool list
-        has_use_agent = False
+        has_use_agent = True
         use_agent_tool = None
         try:
             from strands_tools import use_agent as _use_agent

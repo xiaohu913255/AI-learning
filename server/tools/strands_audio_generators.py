@@ -34,7 +34,8 @@ def create_generate_audio_with_context(
 
     @tool
     async def generate_audio_with_context(
-        prompt: Annotated[str, Field(description="Text to convert to speech/audio")]
+        prompt: Annotated[str, Field(description="Text to convert to speech/audio")],
+        input_audio: Annotated[str, Field(description="Optional reference audio file ID (e.g., 'au_xxx.mp3') to clone voice style. Leave empty to use default voice.")] = "",
     ):
         """
         Generate audio from text using ComfyUI TTS workflow.
@@ -67,6 +68,7 @@ def create_generate_audio_with_context(
             audio_id, duration, filename = await generator.generate(
                 prompt=prompt,
                 model=audio_model.get('model', 't2a-model'),
+                input_audio=input_audio,
                 ctx=ctx
             )
 

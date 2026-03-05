@@ -494,7 +494,7 @@ const ChatTextarea: React.FC<ChatTextareaProps> = ({
           )}
 
           {/* 音频按钮 - 添加音频时显示 */}
-          {['add-audio', 'image-audio'].includes(selectedModelType) && (
+          {['add-audio','text-to-audio', 'image-audio'].includes(selectedModelType) && (
             <Button
               variant="outline"
               size="icon"
