@@ -35,7 +35,7 @@ def create_generate_audio_with_context(
     @tool
     async def generate_audio_with_context(
         prompt: Annotated[str, Field(description="Text to convert to speech/audio")],
-        input_audio: Annotated[str, Field(description="Optional reference audio file ID (e.g., 'au_xxx.mp3') to clone voice style. Leave empty to use default voice.")] = "",
+        input_audio: Annotated[str, Field(description="REQUIRED: Reference audio file ID from user's uploaded audio (e.g., 'im_xxx.mp3'). Extract from message like [Attached audio filename: im_xxx.mp3]")] = "",
     ):
         """
         Generate audio from text using ComfyUI TTS workflow.
@@ -50,6 +50,19 @@ def create_generate_audio_with_context(
             print(f"🎵 generate_audio_with_context called")
             print(f"🔍 DEBUG: prompt={prompt[:100]}")
             print(f"🔍 DEBUG: audio_model={audio_model}")
+
+            # 自动从上下文提取音频文件 ID
+            if not input_audio:
+                from services.db_service import db_service
+                messages = db_service.get_chat_history(session_id)
+                for msg in reversed(messages[-3:]):
+                    content = msg.get('content', '')
+                    import re
+                    match = re.search(r'\[Attached audio filename: (im_[^\]]+\.mp3)\]', content)
+                    if match:
+                        input_audio = match.group(1)
+                        print(f"✅ Auto-extracted input_audio: {input_audio}")
+                        break
 
             # 创建上下文
             ctx = {

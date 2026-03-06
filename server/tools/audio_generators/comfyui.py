@@ -115,9 +115,7 @@ class ComfyUIAudioGenerator(AudioGenerator):
 
         if not execution.outputs:
             raise Exception('No outputs from T2A workflow')
-
-        url = execution.outputs[0]
-
+        url = execution.outputs[-1]
         audio_id = generate_audio_id()
         mime_type, duration, extension = await get_audio_info_and_save(
             url, os.path.join(FILES_DIR, f'{audio_id}')

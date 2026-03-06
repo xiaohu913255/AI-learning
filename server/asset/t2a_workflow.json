@@ -49,19 +49,6 @@
       "title": "Pause Node @MW"
     }
   },
-  "61": {
-    "inputs": {
-      "audioUI": "",
-      "audio": [
-        "63",
-        0
-      ]
-    },
-    "class_type": "PreviewAudio",
-    "_meta": {
-      "title": "预览音频"
-    }
-  },
   "63": {
     "inputs": {
       "audio": "16k16bit.wav",

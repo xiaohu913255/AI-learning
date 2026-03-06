@@ -396,6 +396,16 @@ Example: generate_image_with_context(prompt="Upscale to high resolution", use_pr
 VIDEO DUBBING (配音/视频添加音频):
 When user wants to add audio to video (keywords: 配音, 添加音频, 配上音频, 合并音频, add audio, dub):
 - Call: generate_video_with_context(prompt="Add audio to video", use_previous_video=True, use_previous_audio=True, model_override="db-model")
+AUDIO GENERATION (文生音频):
+When user requests text-to-speech or audio generation (keywords: 文生音频, 配音, 生成音频, TTS):
+1. Extract the audio file ID from user's message if they uploaded a reference audio
+   - Look for pattern: [Attached audio filename: im_xxx.mp3]
+   - Extract the file ID: im_xxx.mp3
+2. Call generate_audio_with_context with:
+   - prompt: the text to convert to speech
+   - input_audio: the extracted audio file ID (REQUIRED for voice cloning)
+Example: If user says "为这段文字配音：'测试文本'" and uploaded im_abc123.mp3
+Call: generate_audio_with_context(prompt="测试文本", input_audio="im_abc123.mp3")
 - This will automatically use the most recent video and audio from the conversation
 
 For other tasks, use your general knowledge and reasoning capabilities.

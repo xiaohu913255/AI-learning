@@ -311,8 +311,7 @@ class WorkflowExecution:
         # Handle audio outputs
         if "audio" in output:
             for audio in output["audio"]:
-                if audio.get("type") == "output":
-                    self.outputs.append(self.format_video_path(audio))
+                self.outputs.append(self.format_video_path(audio))
 
         await send_to_websocket(self.ctx.get('session_id'), {
             'type': 'tool_call_progress',
